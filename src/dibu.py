@@ -1,3 +1,5 @@
+from xml.etree import ElementTree as et
+
 class AvailableFunctions(object):
 	"""Define available functions in our language."""
 
@@ -10,8 +12,52 @@ class AvailableFunctions(object):
 
 		# these codes are used since the XML in the SVG
 		# functions does not necessarily match the function name
-		self.functionCodes = {}
+		self.functionCodes  = {}
 		self.attributeCodes = {}
+
+		# define available functions
+		self.add('size');
+		self.addAttribute('size', 'height', 'number');
+		self.addAttribute('size', 'width',  'number');
+
+		self.add('rectangle', 'rect');
+		self.addAttribute('rectangle', 'upper_left', 'point');
+		self.addAttribute('rectangle', 'size',  'point');
+
+		self.add('line');
+		self.addAttribute('line', 'from', 'point');
+		self.addAttribute('line', 'to', 'point');
+
+		self.add('circle');
+		self.addAttribute('circle', 'center', 'point');
+		self.addAttribute('circle', 'radius', 'number', 'r');
+
+		self.add('ellipse');
+		self.addAttribute('ellipse', 'center', 'point');
+		self.addAttribute('ellipse', 'rx', 'number');
+		self.addAttribute('ellipse', 'ry', 'number');
+
+		self.add('polyline');
+		self.addAttribute('polyline', 'points', 'array');
+
+		self.add('polygon');
+		self.addAttribute('polygon', 'points', 'array');
+
+		self.add('text');
+		self.addAttribute('text', 't', 'string');
+		self.addAttribute('text', 'at', 'point');
+		# optional
+		self.addOptionalAttribute('text', 'font-familly', 'string');
+		self.addOptionalAttribute('text', 'font-size', 'string');
+
+		self.addGeneralAttribute('style', 'list')
+		self.addGeneralAttribute('fill', 'string')
+		self.addGeneralAttribute('stroke', 'string')
+		self.addGeneralAttribute('stroke-width', 'number')
+
+		self.addStyleAttribute('fill', 'string')
+		self.addStyleAttribute('stroke', 'string')
+		self.addStyleAttribute('stroke-width', 'number')
 
 	def print_functions(self):
 		print self.d;
@@ -101,18 +147,16 @@ class AvailableFunctions(object):
 
 class SVG(object):
 
-	def __init__(self, expressions):
+	def __init__(self, expressions, f):
 		self.expressions = expressions;
+		self.f = f
 
 	def generateSVG(self):
-
-		global f;
 
 		doc = et.Element('svg', version='1.1', xmlns='http://www.w3.org/2000/svg')
 
 		# search for SVG size in expression tree
 		size_set = False
-		print self.expressions;
 		for function, argument_list in self.expressions:
 			if function == 'size':
 				for attribute, value in argument_list:
@@ -153,11 +197,11 @@ class SVG(object):
 					else:
 						print attribute
 						print value
-						text.attrib[f.getAttributeCode(function, attribute)] = str(value['value'])
+						text.attrib[self.f.getAttributeCode(function, attribute)] = str(value['value'])
 
 				doc.append(text)
 			else:
-				new_element = et.SubElement(doc, f.getFunctionCode(function));
+				new_element = et.SubElement(doc, self.f.getFunctionCode(function));
 				for attribute, value in argument_list:
 
 					# print argument_list
@@ -184,9 +228,9 @@ class SVG(object):
 						points = []
 						for point in value['value']:
 							points.append(str(point['x']['value'])+","+str(point['y']['value']))
-						new_element.attrib[f.getAttributeCode(function, attribute)] = ' '.join(points)
+						new_element.attrib[self.f.getAttributeCode(function, attribute)] = ' '.join(points)
 					else:
-						new_element.attrib[f.getAttributeCode(function, attribute)] = str(value['value'])
+						new_element.attrib[self.f.getAttributeCode(function, attribute)] = str(value['value'])
 
 		string  = "<?xml version=\"1.0\" standalone=\"no\"?>\n";
 		string += et.tostring(doc)

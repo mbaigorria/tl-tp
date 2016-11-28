@@ -1,4 +1,3 @@
-from xml.etree import ElementTree as et
 from dibu import *
 
 class SemanticException(Exception):
@@ -12,24 +11,23 @@ class Expression(object):
 
 class Start(Expression):
 
-	def __init__(self, expressions):
+	def __init__(self, expressions, f):
+		self.f = f
 		self.expressions = expressions
 
 	def evaluate(self):
 		tree_expressions = self.expressions.evaluate()
 		tree_expressions.reverse()
 
-		# for e in tree_expressions:
-		# 	print e
-
-		svg = SVG(tree_expressions)
+		svg = SVG(tree_expressions, self.f)
 		result = svg.generateSVG();
 
 		return result
 
 class ExpressionList(Expression):
 
-	def __init__(self, function_id, argument_list, next_expression):
+	def __init__(self, function_id, argument_list, next_expression,f):
+		self.f = f;
 		self.function_id = function_id;
 		self.argument_list = argument_list;
 		self.next_expression = next_expression;
@@ -40,10 +38,8 @@ class ExpressionList(Expression):
 		argument_list   = self.argument_list.evaluate()
 		next_expression = self.next_expression.evaluate()
 
-		global f
-
 		# check if function exists
-		if not f.functionExists(function_id):
+		if not self.f.functionExists(function_id):
 			raise SemanticException("Non-existant function "+function_id+".")
 
 		# check if size was already defined
@@ -55,14 +51,14 @@ class ExpressionList(Expression):
 
 		# check if mandatory attributes are defined
 		attribute_types = [x[0] for x in argument_list]
-		mandatoryAttributes = [x[0] for x in f.getMandatoryAttributes(function_id)]
+		mandatoryAttributes = [x[0] for x in self.f.getMandatoryAttributes(function_id)]
 		for attribute in mandatoryAttributes:
 			if attribute not in attribute_types:
 				raise SemanticException("Missing attribute "+attribute+" in "+function_id+".")
 
 		# check if all attributes are valid
 		attribute_types = [x[0] for x in argument_list]
-		mandatoryAttributes = [x[0] for x in f.getAllAttributes(function_id)]
+		mandatoryAttributes = [x[0] for x in self.f.getAllAttributes(function_id)]
 		for attribute in attribute_types:
 			if attribute not in mandatoryAttributes:
 				print function_id
@@ -79,18 +75,18 @@ class ExpressionList(Expression):
 				raise SemanticException("Multiple definitions of attribute "+attribute+".")
 
 		# check if all attribute types are valid
-		possible_attributes = f.getAllAttributes(function_id)
+		possible_attributes = self.f.getAllAttributes(function_id)
 		for attribute_name, attribute_values in argument_list:
 			if attribute_name == "style":
-				style_attributes = f.getStyleAttributes()
+				style_attributes = self.f.getStyleAttributes()
 				for name, value in attribute_values:
 					if (name, value['type']) not in style_attributes:
 						raise SemanticException("Invalid style attribute type for "+name+".")
-			elif f.getAttributeType(function_id, attribute_name) == 'point':
+			elif self.f.getAttributeType(function_id, attribute_name) == 'point':
 				for chord in attribute_values:
 					if chord != 'type' and attribute_values[chord]['type'] is not 'number':
 						raise SemanticException("Invalid attribute type for "+chord['value']+".")
-			elif f.getAttributeType(function_id, attribute_name) == 'array':
+			elif self.f.getAttributeType(function_id, attribute_name) == 'array':
 				pass
 				#todo
 			else:
