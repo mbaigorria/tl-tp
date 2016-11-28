@@ -1,0 +1,86 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+
+\usepackage{caratula}
+
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{dirtytalk}
+\usepackage{enumerate}
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listingsutf8}
+
+\usepackage{float}
+\floatplacement{figure}{h!}
+
+\usepackage{geometry}
+\usepackage{fixltx2e}
+\usepackage{wrapfig}
+\usepackage{cite}
+\usepackage{dsfont}
+\usepackage{ulem}
+\usepackage{xcolor}
+
+\usepackage[space]{grffile}
+
+\geometry{
+ a4paper,
+ total={210mm,297mm},
+ left=30mm,
+ right=30mm,
+ top=30mm,
+ bottom=30mm,
+}
+ 
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Teorema}[section]
+\newtheorem{corollary}{Corolario}[theorem]
+\newtheorem{lemma}{Lema}[theorem]
+ 
+\theoremstyle{definition}
+\newtheorem{definition}{Definición}[section]
+ 
+\theoremstyle{remark}
+\newtheorem*{remark}{Observación}
+ 
+\begin{document}
+% Estos comandos deben ir antes del \maketitle
+\materia{Teoria de Lenguajes} % obligatorio
+
+\titulo{TP1}
+\subtitulo{NoSQL \\ \today}
+\grupo{Grupo: Parseamela Gramatica}
+ 
+\integrante{Mauro Cherubini}{835/13}{cheru.mf@gmail.com}
+\integrante{Martin Baigorria}{575/14}{martinbaigorria@gmail.com}
+ 
+\maketitle
+
+\tableofcontents
+
+\section{Gramatica}
+
+La siguiente gramatica corresponde al lenguaje Dibu:
+
+\begin{equation}
+\begin{aligned}
+\textcolor{blue}{INST} & \rightarrow & id \; \textcolor{red}{ARGL} \; \textcolor{blue}{INST}  \; | \; \lambda \\
+\textcolor{red}{ARGL} & \rightarrow & ident = VAL \\
+     & \quad | &  id = VAL, ARGL \\
+VAL  & \rightarrow & num | string \\
+     & \quad | & (VAL, VAL) | [LVAL] \\
+LVAL & \rightarrow & LVAL, VAL | VAL
+\end{aligned}
+\end{equation}
+
+\end{document}
