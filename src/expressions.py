@@ -85,10 +85,11 @@ class ExpressionList(Expression):
 			elif self.f.getAttributeType(function_id, attribute_name) == 'point':
 				for chord in attribute_values:
 					if chord != 'type' and attribute_values[chord]['type'] is not 'number':
-						raise SemanticException("Invalid attribute type for "+chord['value']+".")
+						raise SemanticException("Invalid attribute type for "+chord+" in point.")
 			elif self.f.getAttributeType(function_id, attribute_name) == 'array':
-				pass
-				#todo
+				for point in attribute_values['value']:
+					if point['x']['type'] != 'number' or point['x']['type'] != 'number':
+						raise SemanticException("Array must be composed of valid points.")
 			else:
 				attribute = (attribute_name, attribute_values['type'])
 				if attribute not in possible_attributes:

@@ -5,7 +5,7 @@ class DibuLexer(object):
 	class LexicalException(Exception):
 		pass
 
-	# list of ts
+	# list of tokens
 	tokens = (
 		'ID',
 		'EQUALS',
@@ -34,7 +34,7 @@ class DibuLexer(object):
 	t_ignore = " \t\r"
 
 	def t_ID(self, t):
-		r"[_a-zA-Z][\-_a-zA-Z0-9]*"
+		r"[\-_a-zA-Z0-9]*"
 		return t
 
 	def t_NUMBER(self, t):
@@ -50,7 +50,7 @@ class DibuLexer(object):
 		t.lexer.lineno += len(t.value)
 
 	def t_STRING(self, t):
-		r"\"[_a-zA-Z][ _a-zA-Z0-9]*\""
+		r"\"[ _a-zA-Z0-9]*\""
 		t.value = t.value[1:-1]
 		return t
 

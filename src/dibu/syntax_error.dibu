@@ -1,9 +1,2 @@
-size height=200, width=200
-rectangle upper_left=(0,0), size=(50, 50), fill="red"
-rectangle upper_left=(100,0), size=(50, 50)
-rectangle upper_left=(50,50), size=(50, 50,
-rectangle upper_left=(150,50), size=(50, 50)
-rectangle upper_left=(0,100), size=(50, 50)
-rectangle upper_left=(100,100), size=(50, 50)
-rectangle upper_left=(50,150), size=(50, 50)
-rectangle upper_left=(150,150), size=(50, 50)
+rectangle upper_left=(0,0), size=(200, 200), fill="yellow"
+polygon points=[(0,0), (50, 50), (0, 100)], style="stroke: black; stroke-width: 3; fill: none;"

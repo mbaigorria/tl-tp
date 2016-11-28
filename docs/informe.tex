@@ -5,7 +5,6 @@
 
 \usepackage{caratula}
 
-\usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{dirtytalk}
 \usepackage{enumerate}
@@ -43,6 +42,9 @@
  
 \usepackage{booktabs}
 
+\usepackage{verbatim}
+\usepackage{qtree}
+
 \newtheorem{theorem}{Teorema}[section]
 \newtheorem{corollary}{Corolario}[theorem]
 \newtheorem{lemma}{Lema}[theorem]
@@ -58,7 +60,7 @@
 \materia{Teoria de Lenguajes} % obligatorio
 
 \titulo{TP1}
-\subtitulo{NoSQL \\ \today}
+\subtitulo{Dibu: Graficos vectoriales para niños \\ \today}
 \grupo{Grupo: Parseamela Gramatica}
  
 \integrante{Mauro Cherubini}{835/13}{cheru.mf@gmail.com}
@@ -68,19 +70,318 @@
 
 \tableofcontents
 
+\pagebreak
+
+\section{Introduccion}
+
+El presente documento describe el lenguaje Dibu, un lenguaje de graficos vectoriales para niños. Para construirlo, a partir del diseno del lenguaje se procedio a construir su gramatica, para luego programar su correspondiente Lexer y Parser. Toda la implementacion fue realizada utilizando Python y la libreria PLY (Python Lex-Yacc) \footnote{PLY (Python Lex-Yacc): http://www.dabeaz.com/ply/ply.html}.
+
 \section{Gramatica}
 
-La siguiente gramatica corresponde al lenguaje Dibu:
+Al momento de disenar la gramatica de Dibu, tuvimos que tener en cuenta varias caracteristicas del lenguaje:
+\begin{enumerate}
+	\item El atributo size, que define el tamano de un canvas SVG, no necesariamente es la primera instruccion ni necesariamente existe.
+	\item Para toda funcion, sus parametros deben ser conmutativos.
+	\item Los argumentos opcionales se pueden introducir a las funciones de dos maneras diferentes, por medio de atributos normales o por medio de atributos de estilo.
+	\item Los literales que forman parte del lenguaje son:
+		\begin{itemize}
+			\item Numeros (enteros o de punto flotante)
+			\item Strings
+			\item Pares/Puntos
+			\item Arreglos de literales
+		\end{itemize}
+	\item size puede ser un identificador de funcion o un atributo.
+	\item Las instrucciones se pueden separar por medio de espacios o linebreaks.
+\end{enumerate}
 
-\begin{equation}
-\begin{aligned}
-\textcolor{blue}{INST} & \rightarrow & id \; \textcolor{red}{ARGL} \; \textcolor{blue}{INST}  \; | \; \lambda \\
-\textcolor{red}{ARGL} & \rightarrow & ident = VAL \\
-     & \quad | &  id = VAL, ARGL \\
-VAL  & \rightarrow & num | string \\
-     & \quad | & (VAL, VAL) | [LVAL] \\
-LVAL & \rightarrow & LVAL, VAL | VAL
-\end{aligned}
-\end{equation}
+La siguiente gramatica corresponde al lenguaje Dibu. La misma se encuentra en el lenguaje aceptado por PLY:
+
+\begin{verbatim}
+Rule 0     S' -> start
+Rule 1     start -> expression
+Rule 2     expression -> ID argument_list expression
+Rule 3     expression -> <empty>
+Rule 4     argument_list -> ID EQUALS type_value
+Rule 5     argument_list -> argument_list COMMA ID EQUALS type_value
+Rule 6     type_value -> variable
+Rule 7     type_value -> QUOTATION_MARK argl_style QUOTATION_MARK
+Rule 8     argl_style -> ID COLON style_var SEMICOLON
+Rule 9     argl_style -> argl_style ID COLON style_var SEMICOLON
+Rule 10    style_var -> ID
+Rule 11    style_var -> NUMBER
+Rule 12    variable -> NUMBER
+Rule 13    variable -> STRING
+Rule 14    variable -> LPAREN variable COMMA variable RPAREN
+Rule 15    variable -> LBRACKET variable_list RBRACKET
+Rule 16    variable_list -> variable
+Rule 17    variable_list -> variable_list COMMA variable
+\end{verbatim}
+\footnote{Intentamos hacer que start fuese el nodo de comienzo de la gramatica, pero PLY no estuvo de nuestro lado.}
+
+\pagebreak
+
+Los terminales y no terminales son:
+
+\begin{verbatim}
+Terminals, with rules where they appear
+
+COLON                : 8 9
+COMMA                : 5 14 17
+EQUALS               : 4 5
+ID                   : 2 4 5 8 9 10
+LBRACKET             : 15
+LPAREN               : 14
+NUMBER               : 11 12
+QUOTATION_MARK       : 7 7
+RBRACKET             : 15
+RPAREN               : 14
+SEMICOLON            : 8 9
+STRING               : 13
+error                : 
+
+Nonterminals, with rules where they appear
+
+argl_style           : 7 9
+argument_list        : 2 5
+expression           : 1 2
+start                : 0
+style_var            : 8 9
+type_value           : 4 5
+variable             : 6 14 14 16 17
+variable_list        : 15 17
+\end{verbatim}
+
+A continuacion podemos ver un ejemplo de nuestra gramatica y su correspondiente arbol de derivacion:
+
+\begin{verbatim}
+size height=200, width=200
+rectangle upper_left=(0,0), size=(50,50), fill="red"
+polyline points=[(200, 200), (150, 150)], style="stroke-width: 3; fill: none;"
+\end{verbatim}
+
+\textbf{HACER UN ARBOL POSTA MAURO!}
+
+\Tree[.IP [.NP [.Det \textit{the} ]
+               [.N\1 [.N \textit{package} ]]]
+          [.I\1 [.I \textsc{3sg.Pres} ]
+                [.VP [.V\1 [.V \textit{is} ]
+                           [.AP [.Deg \textit{really} ]
+                                [.A\1 [.A \textit{simple} ]
+                                      \qroof{\textit{to use}}.CP ]]]]]]
+
+\pagebreak
+
+\section{Lexer}
+
+En primer lugar, para identificar los tokens tuvimos un problema. Los atributos strings eran muy similares a los atributos de estilo. Por ejemplo:
+
+\begin{verbatim}
+fill="red"
+style="fill: none;"
+\end{verbatim}
+
+Por esta razon, decidimos que para distinguir entre estos dos tipos de strings usariamos el caracter :. El caracter : en general es solo valido para los atributos de estilo, por lo que parecio razonable.
+
+A continuacion mostramos las expresiones regulares que utilizamos para identificar los diferentes tokens.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Token & Expresion Regular \\ \midrule
+: &  :\\
+, &  ,\\
+= &  =\\
+ID &  {[} \-\_a-zA-Z0-9{]} *\\
+( &  (\\
+) &  )\\
+NUMBER & [0-9]+(.[0-9]+)? \\
+{[} & {[}\\
+{]} & {]} \\
+STRING &  $"$ [ \_a-zA-Z0-9]* $"$\\ \bottomrule
+\end{tabular}
+\caption{Expresiones regulares para los tokens}
+\end{table}
+
+\section{Parser}
+
+En PLY, nuestra gramatica fue reconocida por un parser LALR. Para cada nodo del arbol, creamos una clase apropiada para contener los respectivos valores. Por ejemplo, cualquier literal es representado con un diccionario con dos atributos, valor y tipo.
+
+\textbf{Mauro escribi un poco mas aca!}
+
+\section{Analisis Semantico}
+
+Nuestro lenguaje reconoce los siguientes tipos de errores semanticos:
+
+\begin{enumerate}
+	\item Verifica si las funciones utilizadas son validas.
+	\item Verifica si el size del canvas ya fue definido, propagando un bool que dice si ya esta definido o no hacia abajo el AST.
+	\item Verifica si todos los atributos obligatorios de una clase fueron definidos.
+	\item Verifica si todos los atributos son validos, considerando atributos opcionales.
+	\item Verifica si ningun atributo se definio dos veces.
+	\item Verifica que los tipos de todos los literales son validos.
+\end{enumerate}
+
+\begin{itemize}
+	\item Cada funcion tiene dos tipos de parametros asociados. Obligatorios y opcionales.
+\end{itemize}
+
+\pagebreak
+
+\section{Ejemplos}
+
+\subsection{aim.svg}
+
+\begin{verbatim}
+size height=100, width=100
+circle center=(50, 50), radius=50, fill="red"
+circle center=(50, 50), radius=25, fill="black"
+\end{verbatim}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=1]{images/aim}
+  \caption{aim.svg}
+\end{figure}
+
+\subsection{grid.svg}
+
+\begin{verbatim}
+rectangle upper_left=(0,0), size=(200, 200), fill="yellow"
+polygon points=[(0,0), (50, 50), (0, 100)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(0,0), (50, 50), (100, 0)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(0, 100), (50, 150), (0, 200)], style="stroke: black; stroke-width: 3; fill:none;"
+polygon points=[(0, 200), (50, 150), (100, 200)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(100, 200), (150, 150), (200, 200)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(200, 200), (150, 150), (200, 100)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(200, 100), (150, 50), (200, 0)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(200, 0), (150, 50), (100, 0)], style="stroke: black; stroke-width: 3; fill:none;"
+\end{verbatim}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{images/grid}
+  \caption{aim.svg}
+\end{figure}
+
+\subsection{squares.svg}
+
+\begin{verbatim}
+size height=200, width=200
+rectangle upper_left=(0,0), size=(50, 50), fill="red"
+rectangle upper_left=(100,0), size=(50, 50)
+rectangle upper_left=(50,50), size=(50, 50)
+rectangle upper_left=(150,50), size=(50, 50)
+rectangle upper_left=(0,100), size=(50, 50)
+rectangle upper_left=(100,100), size=(50, 50)
+rectangle upper_left=(50,150), size=(50, 50)
+rectangle upper_left=(150,150), size=(50, 50)
+\end{verbatim}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{images/squares}
+  \caption{squares.svg}
+\end{figure}
+
+\subsection{Deteccion de errores}
+
+\subsubsection{Errores lexicos}
+
+\subsubsection*{lexical\_error.dibu}
+\begin{verbatim}
+size height=200, width=200
+rectangle upper_left=(0,0), size=(50, 50), fill="red!
+\end{verbatim}
+
+\subsubsection*{Output:}
+\begin{verbatim}
+Lexical error at line 2, column 53:
+rectangle upper_left=(0,0), size=(50, 50), fill="red!
+                                                    ^
+\end{verbatim}
+                 
+
+\subsubsection{Errores sintacticos}
+
+\subsubsection*{syntax\_error.dibu}
+\begin{verbatim}
+size height=200, width=200
+rectangle upper_left=(0,0), size=(50, 50), fill="red"
+rectangle upper_left=(100,0), size=(50, 50)
+rectangle upper_left=(50,50), size=(50, 50,
+rectangle upper_left=(150,50), size=(50, 50)
+\end{verbatim}
+
+\subsubsection*{Output:}
+\begin{verbatim}
+Parse error at line 4, column 43:
+rectangle upper_left=(50,50), size=(50, 50,
+                                          ^
+\end{verbatim}
+
+\subsubsection{Errores semanticos}
+
+\subsubsection*{semantic\_error.dibu}
+\begin{verbatim}
+size height=200, width=200
+rectangle upper_left=("red",0), size=(50, 50), fill="red"
+\end{verbatim}
+
+\subsubsection*{Output:}
+\begin{verbatim}
+Invalid attribute type for x in point.
+\end{verbatim}
+
+
+\section{Armado del XML del SVG}
+
+Una vez parseado el codigo, se debe traducir a SVG. Los SVG (Scalable Vector Graphics) son archivos XML con cierto formato. Para una funcion de Dibu, en general su nombre de funcion y atributo coincide con el identificador utilizado por SVG en XML. Sin embargo, en el caso de las funciones muchas veces esto no sucede. Por esta razon en la clase AvailableFunctions(), al agregar una funcion tambien se debe agregar su alias de SVG. Este es el caso de 'rectangle', donde en el SVG se la llama 'rect'.
+
+En cuanto a los atributos, algo muy similar sucedio. En el caso de los puntos, los arreglos y los atributos de texto, los mismos tenian un formato muy particular, por lo que decidimos hardcodear el armado de estos atributos en la clase SVG.
+
+Para el armado de los XML se utilizo la libreria ElementTree de Python.
+
+\section{Requerimientos}
+
+Para poder correr nuestro parser, se necesita Python 2 con las siguientes dependencias/paquetes:
+
+\begin{enumerate}
+	\item PLY: Python Lex-Yacc
+	\item ElementTree: Viene en la libreria standard de Python, se utiliza para generar XMLs.
+	\item xml.dom.minidom: Utilizado para mejorar el aspecto visual de los XML generados.
+\end{enumerate}
+
+Luego, para correr el parser simplemente hacer:
+\begin{verbatim}
+python parser.py dibu/aim.dibu dibu/aim.svg
+\end{verbatim}
+
+Donde el primer parametro indica el path al script en formato Dibu y el segundo parametro el path al archivo donde escribir el SVG resultante.
+
+\section{Conclusion}
+
+\textbf{Alguna reflexion general sobre el armado de parsers. MAURO!}
+
+\pagebreak
+
+\section{Código fuente}
+
+\subsection{lexer.py}
+\verbatiminput{../src/lexer.py}
+
+\subsection{parser.py}
+\begin{small}
+  \verbatiminput{../src/parser.py}
+\end{small}
+\subsection{expressions.py}
+\begin{small}
+  \verbatiminput{../src/expressions.py}
+\end{small}
+
+\subsection{dibu.py}
+\begin{small}
+  \verbatiminput{../src/dibu.py}
+\end{small}
 
 \end{document}

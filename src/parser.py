@@ -1,6 +1,7 @@
 from ply import yacc
 from lexer import DibuLexer
 from dibu import AvailableFunctions
+from expressions import SemanticException
 
 from expressions import *
 from xml.dom.minidom import parseString as xmlParse
@@ -12,7 +13,7 @@ class DibuParser(object):
 
 	tokens = DibuLexer.tokens
 
-	class SyntaxException(Exception):
+	class ParseException(Exception):
 		pass
 
 	def p_start(self, subexpressions):
@@ -91,12 +92,17 @@ class DibuParser(object):
 
 	def p_error(self, t):
 
+		# when t is not defined (missing lexeme) we cant say where we are
+		if t is None:
+			print 'Parse error.'
+			raise self.ParseException()
+
 		line = t.lineno
 		column = self.find_column(t)
 		print 'Parse error at line %d, column %d:' % (line, column)
 		print self.code.split('\n')[line - 1]
 		print ' ' * (column - 1) + '^'
-		raise self.SyntaxException()
+		raise self.ParseException()
 
 	def parse(self, code):
 		self.code = code
@@ -127,16 +133,18 @@ if __name__ == "__main__":
 
 	try:
 		expression = parser.parse(code)
-	except DibuParser.SyntaxException as exception:
+	except DibuParser.ParseException as exception:
 		print str(exception)
 		exit()
 	except DibuLexer.LexicalException as exception:
 		print str(exception)
 		exit()
-	else:
-		print "Syntax is valid."
 
-	output = expression.evaluate()
+	try:
+		output = expression.evaluate()
+	except SemanticException as exception:
+		print str(exception)
+		exit()
 
 	pretty_xml = xmlParse(output).toprettyxml();
 	    

@@ -1,11 +1,9 @@
-<?xml version="1.0" ?>
-<svg height="200" version="1.1" width="200" xmlns="http://www.w3.org/2000/svg">
-	<rect fill="red" height="50" width="50" x="0" y="0"/>
-	<rect height="50" width="50" x="100" y="0"/>
-	<rect height="50" width="50" x="50" y="50"/>
-	<rect height="50" width="50" x="150" y="50"/>
-	<rect height="50" width="50" x="0" y="100"/>
-	<rect height="50" width="50" x="100" y="100"/>
-	<rect height="50" width="50" x="50" y="150"/>
-	<rect height="50" width="50" x="150" y="150"/>
-</svg>
+rectangle upper_left=(0,0), size=(200, 200), fill="yellow"
+polygon points=[(0,0), (50, 50), (0, 100)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(0,0), (50, 50), (100, 0)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(0, 100), (50, 150), (0, 200)], style="stroke: black; stroke-width: 3; fill:none;"
+polygon points=[(0, 200), (50, 150), (100, 200)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(100, 200), (150, 150), (200, 200)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(200, 200), (150, 150), (200, 100)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(200, 100), (150, 50), (200, 0)], style="stroke: black; stroke-width: 3; fill: none;"
+polygon points=[(200, 0), (150, 50), (100, 0)], style="stroke: black; stroke-width: 3; fill:none;"
