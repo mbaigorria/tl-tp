@@ -1,7 +1,6 @@
 \documentclass{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[spanish]{babel}
 
 \usepackage{caratula}
 
@@ -65,6 +64,7 @@
  
 \integrante{Mauro Cherubini}{835/13}{cheru.mf@gmail.com}
 \integrante{Martin Baigorria}{575/14}{martinbaigorria@gmail.com}
+\integrante{Federico Beuter}{827/13}{federicobeuter@gmail.com}
  
 \maketitle
 
@@ -132,7 +132,7 @@ ID                   : 2 4 5 8 9 10
 LBRACKET             : 15
 LPAREN               : 14
 NUMBER               : 11 12
-QUOTATION_MARK       : 7 7
+QUOTATION_MARK       : 7
 RBRACKET             : 15
 RPAREN               : 14
 SEMICOLON            : 8 9
@@ -151,23 +151,62 @@ variable             : 6 14 14 16 17
 variable_list        : 15 17
 \end{verbatim}
 
-A continuacion podemos ver un ejemplo de nuestra gramatica y su correspondiente arbol de derivacion:
+%A continuacion podemos ver un ejemplo de nuestra gramatica y su correspondiente arbol de derivacion:
 
-\begin{verbatim}
-size height=200, width=200
-rectangle upper_left=(0,0), size=(50,50), fill="red"
-polyline points=[(200, 200), (150, 150)], style="stroke-width: 3; fill: none;"
-\end{verbatim}
+%\begin{verbatim}
+%size height=200, width=200
+%rectangle upper_left=(0,0), size=(50,50), fill="red"
+%polyline points=[(200, 200), (150, 150)], style="stroke-width: 3; fill: none;"
+%\end{verbatim}
+%
+%\textbf{HACER UN ARBOL POSTA MAURO!}
 
-\textbf{HACER UN ARBOL POSTA MAURO!}
 
-\Tree[.IP [.NP [.Det \textit{the} ]
-               [.N\1 [.N \textit{package} ]]]
-          [.I\1 [.I \textsc{3sg.Pres} ]
-                [.VP [.V\1 [.V \textit{is} ]
-                           [.AP [.Deg \textit{really} ]
-                                [.A\1 [.A \textit{simple} ]
-                                      \qroof{\textit{to use}}.CP ]]]]]]
+%\Tree[.S' [.start [.expression [.ID !\qsetw{-5cm}
+                                     %\textit{size} ] 
+                               %[.argument_list !\qsetw{-5cm} [.argument_list !\qsetw{-5cm} [.ID \textit{height} ] 
+																														   %[.EQUALS ]
+																														   %[.type_value [.variable [.NUMBER \textit{(200)} ] ] ] 
+																							 %]
+																						   %[.COMMA ] 
+																					     %[.ID (width) ] 
+																							 %[.EQUALS ]
+																							 %[.type_value [.variable [.NUMBER \textit{(200)} ] ] ]
+															 %]																							
+                               %[.expression [.ID \textit{regtangle} ] 
+                                            %[.argument_list [.argument_list [.argument_list [.ID \textit{upper_left} ]
+																						                                                %[.EQUALS ]
+																						                                                %[.type_value [.variable [.LPAREN ]
+																																														                        %[.variable [.NUMBER (0) ] ]
+																																																										%[.COMMA ]
+																																																										%[.variable [.NUMBER (0) ] ]
+																																																										%[.RPAREN ] ]
+																																														%] 
+																																						%]
+																																						%[.COMMA ]
+																						                                %[.ID \textit{size} ] 
+																														                %[.EQUALS ]
+																														                %[.type_value [.variable [.LPAREN ]
+																																														        %[.variable [.NUMBER (0) ] ]
+																																															      %[.COMMA ]
+																																																		%[.variable [.NUMBER (0) ] ]
+																																																	  %[.RPAREN ] ] 
+																																						%] 
+																														%]
+																						                %[.COMMA ] 
+																					                  %[.ID \textit{fill} ] 
+																								            %[.EQUALS ]
+																							              %[.type_value [.variable [.STRING \textit{"red"} ] ] ] 
+																							%] ]                        
+                %] ] ]
+								                    
+%\Tree[.IP [.NP [.Det \textit{the} ]
+               %[.N\1 [.N \textit{package} ]]]
+          %[.I\1 [.I \textsc{3sg.Pres} ]
+                %[.VP [.V\1 [.V \textit{is} ]
+                           %[.AP [.Deg \textit{really} ]
+                                %[.A\1 [.A \textit{simple} ]
+                                      %\qroof{\textit{to use}}.CP ]]]]]]
 
 \pagebreak
 
@@ -203,11 +242,11 @@ STRING &  $"$ [ \_a-zA-Z0-9]* $"$\\ \bottomrule
 \caption{Expresiones regulares para los tokens}
 \end{table}
 
-\section{Parser}
-
-En PLY, nuestra gramatica fue reconocida por un parser LALR. Para cada nodo del arbol, creamos una clase apropiada para contener los respectivos valores. Por ejemplo, cualquier literal es representado con un diccionario con dos atributos, valor y tipo.
-
-\textbf{Mauro escribi un poco mas aca!}
+%\section{Parser}
+%
+%En PLY, nuestra gramatica fue reconocida por un parser LALR. Para cada nodo del arbol, creamos una clase apropiada para contener los respectivos valores. Por ejemplo, cualquier literal es representado con un diccionario con dos atributos, valor y tipo.
+%
+%\textbf{Mauro escribi un poco mas aca!}
 
 \section{Analisis Semantico}
 
@@ -359,9 +398,9 @@ python parser.py dibu/aim.dibu dibu/aim.svg
 
 Donde el primer parametro indica el path al script en formato Dibu y el segundo parametro el path al archivo donde escribir el SVG resultante.
 
-\section{Conclusion}
-
-\textbf{Alguna reflexion general sobre el armado de parsers. MAURO!}
+%\section{Conclusion}
+%
+%\textbf{Alguna reflexion general sobre el armado de parsers. MAURO!}
 
 \pagebreak
 
