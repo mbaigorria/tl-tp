@@ -34,7 +34,7 @@ class DibuLexer(object):
 	t_ignore = " \t\r"
 
 	def t_ID(self, t):
-		r"[\-_a-zA-Z0-9]*"
+		r"[_a-zA-Z][\-_a-zA-Z0-9]*"
 		return t
 
 	def t_NUMBER(self, t):
